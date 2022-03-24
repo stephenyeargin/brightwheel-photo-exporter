@@ -27,7 +27,7 @@ rescue => e
 end
 
 def get_activities(auth)
-  uri = URI("https://schools.mybrightwheel.com/api/v1/students/#{ENV['BRIGHTWHEEL_STUDENT_ID']}/activities?action_type=ac_photo")
+  uri = URI("https://schools.mybrightwheel.com/api/v1/students/#{ENV['BRIGHTWHEEL_STUDENT_ID']}/activities?page=0&page_size=500&action_type=ac_photo")
   http = Net::HTTP.new(uri.host, uri.port)
   http.use_ssl = true
   req = Net::HTTP::Get.new(uri, @headers)
@@ -56,7 +56,7 @@ for activity in data['activities']
   photo_url = activity['media']['image_url']
 
   puts "Downloading data/photos/#{id}.jpg ..."  
-  download = open(photo_url)
+  download = URI.open(photo_url)
   IO.copy_stream(download, "data/photos/#{id}.jpg")
 
   # Update EXIF data

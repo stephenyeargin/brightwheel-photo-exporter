@@ -1,2 +1,4 @@
-*.json
 data/photos
+*.json
+.env
+.ruby-version
