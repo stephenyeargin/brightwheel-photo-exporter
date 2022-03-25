@@ -1,4 +1,5 @@
-data/photos
+data/
+!data/.gitkeep
 *.json
 .env
 .ruby-version
