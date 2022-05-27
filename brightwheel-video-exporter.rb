@@ -20,8 +20,8 @@ def login(username, password)
   req["Accept"] = 'application/json'
   req.body = ({user: {email: username, password: password}}).to_json
   res = http.request(req)
-  return res.header['set-cookie'].split('; ')[0]
-rescue => e
+  res.header['set-cookie'].split('; ')[0]
+rescue RuntimeError => e
   puts "failed #{e}"
   exit(1)
 end
@@ -32,35 +32,33 @@ def get_activities(auth)
   http.use_ssl = true
   req = Net::HTTP::Get.new(uri, @headers)
   req.content_type = 'application/json'
-  req["Accept"] = 'application/json'
+  req['Accept'] = 'application/json'
   req['Cookie'] = auth
   res = http.request(req)
-  json = JSON.parse(res.body)
-  return json
-rescue => e
+  JSON.parse(res.body)
+rescue RuntimeError => e
   puts "failed #{e}"
   exit(1)
 end
 
 # Login and get activities
-if File.exist?('data/activities-videos.json')
+if File.exist?('data/activities.json')
   puts '[WARNING] Loading from saved activities feed. Skipping login.'
-  data = JSON.parse(File.open('data/activities-videos.json').read)
+  data = JSON.parse(File.open('data/activities.json').read)
 else
   auth = login(ENV['BRIGHTWHEEL_EMAIL'], ENV['BRIGHTWHEEL_PASSWORD'])
   data = get_activities(auth)
 end
 
 unless FileUtils.mkdir_p 'data/videos'
-  puts "Could not create directory"
+  puts 'Could not create directory'
   exit(1)
 end
 
-i = 0
-for activity in data['activities']
+data['activities'].each do |activity|
   next if activity['video_info'].nil?
+
   id = activity['video_info']['object_id']
-  timestamp = activity['event_date']
   video_url = activity['video_info']['downloadable_url']
 
   puts "Downloading data/videos/#{id}.mp4 ..."
