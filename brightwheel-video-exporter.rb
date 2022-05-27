@@ -43,8 +43,13 @@ rescue => e
 end
 
 # Login and get activities
-auth = login(ENV['BRIGHTWHEEL_EMAIL'], ENV['BRIGHTWHEEL_PASSWORD'])
-data = get_activities(auth)
+if File.exist?('data/activities-videos.json')
+  puts '[WARNING] Loading from saved activities feed. Skipping login.'
+  data = JSON.parse(File.open('data/activities-videos.json').read)
+else
+  auth = login(ENV['BRIGHTWHEEL_EMAIL'], ENV['BRIGHTWHEEL_PASSWORD'])
+  data = get_activities(auth)
+end
 
 unless FileUtils.mkdir_p 'data/videos'
   puts "Could not create directory"
@@ -58,7 +63,7 @@ for activity in data['activities']
   timestamp = activity['event_date']
   video_url = activity['video_info']['downloadable_url']
 
-  puts "Downloading data/videos/#{id}.mp4 ..."  
+  puts "Downloading data/videos/#{id}.mp4 ..."
   download = URI.open(video_url)
   IO.copy_stream(download, "data/videos/#{id}.mp4")
 
